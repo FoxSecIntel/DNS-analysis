@@ -8,25 +8,26 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-# Get the SOA record for the domain
-soa=$(host -t soa $1 | awk '{print $1, $2, $3, $4, $5, $6, $7}')
+DOMAIN=$1
 
-# Check if the domain has an SOA record
-if [ -z "$soa" ]; then
-    echo "The domain does not have an SOA record"
-    exit 1
-fi
+# Define some colors for use in the script
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Print the SOA record
-echo "SOA record for $1:"
-echo "$soa"
+# Use the dig command to get the SOA record for the domain
+echo -e "${BLUE}SOA record:${NC}"
+dig SOA "$DOMAIN" +short
 
-# Get the NS records for the domain
-ns=$(host -t ns $1 | awk '{print $4}' | grep -v "name")
-echo "NS records for $1:"
-echo "$ns"
+# Use the dig command to get the NS records for the domain
+echo -e "${GREEN}NS records:${NC}"
+dig NS "$DOMAIN" +short
 
-# Get the MX records for the domain
-mx=$(host -t mx $1 | awk '{print $7}')
-echo "MX records for $1:"
-echo "$mx"
+# Use the dig command to get the MX records for the domain
+echo -e "${RED}MX records:${NC}"
+dig MX "$DOMAIN" +short
+
+# Use the dig command to get the A record for the www subdomain
+echo -e "${BLUE}WWW record:${NC}"
+dig A www."$DOMAIN" +short
