@@ -6,14 +6,11 @@ This script gives you that view of any domain you enter
 
 $ ./domain-info.sh example.com
 
-SOA record:
-
+SOA record: <br>
 ns.icann.org. noc.dns.icann.org. 2022091162 7200 3600 1209600 3600
 NS records:
-
 a.iana-servers.net.
 b.iana-servers.net.
-
 MX records:
 0 .
 WWW record:
