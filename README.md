@@ -5,13 +5,12 @@ A domain's DNS records are important for determining how the domain functions an
 This script gives you that view of any domain you enter
 
 $ ./domain-info.sh example.com
-
-  SOA record:
-  ns.icann.org. noc.dns.icann.org. 2022091162 7200 3600 1209600 3600
-  NS records:
-  a.iana-servers.net.
-  b.iana-servers.net.
-  MX records:
-  0 .
-  WWW record:
-  93.184.216.34
+SOA record:
+ns.icann.org. noc.dns.icann.org. 2022091162 7200 3600 1209600 3600
+NS records:
+a.iana-servers.net.
+b.iana-servers.net.
+MX records:
+0 .
+WWW record:
+93.184.216.34
