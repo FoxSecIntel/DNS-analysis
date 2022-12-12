@@ -13,7 +13,7 @@ DOMAIN=$1
 # Define some colors for use in the script
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-BLUE='\033[0;34m'
+BLUE='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Use the dig command to get the SOA record for the domain
