@@ -1,4 +1,5 @@
 #!/bin/bash
+# set -x
 
 # This script shows the SOA, NS, and MX records for a specified domain
 
