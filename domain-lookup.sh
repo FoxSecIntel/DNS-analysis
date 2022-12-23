@@ -1,7 +1,6 @@
 #!/bin/bash
-# purpose of the script is to get a list of dns A records, add the chosen domain and work out if it resolves to a private or public IP
-
 # Check if a command line parameter was provided
+
 if [ $# -eq 0 ]; then
     # If no parameter was provided, display an error message and exit
     echo "Error: No domain name provided."
@@ -14,6 +13,8 @@ public_ip_count=0
 private_ip_count=0
 error_count=0
 rm dns_lookup_results.txt
+rm dlr-public.txt
+touch dlr-public.txt
 
 # Read in the names from the file
 while read name; do
@@ -47,6 +48,7 @@ while read name; do
             else
                 # If the IP address is a public IP, increment the public IP count
                 ((public_ip_count++))
+                  echo "$ip_address" >> dlr-public.txt
             fi
         fi
     fi
