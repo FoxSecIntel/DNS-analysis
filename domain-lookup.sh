@@ -1,3 +1,4 @@
+#!/bin/bash
 # Check if a command line parameter was provided
 if [ $# -eq 0 ]; then
     # If no parameter was provided, display an error message and exit
