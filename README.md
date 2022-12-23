@@ -4,6 +4,7 @@ A domain's DNS records are important for determining how the domain functions an
 
 This repository will provide a bunch of scripts to make life easier when dealing with DNS at work ! 
 
+Find quickly Information about a domain
 $ ./domain-info.sh example.com
 
 SOA record: <br>
@@ -16,4 +17,5 @@ MX records:<br>
 WWW record:<br>
 93.184.216.34<br>
 
+Cycle through a list of A records, with custom domain's to see what resolves
 $ ./domain-lookup.sh example.com
