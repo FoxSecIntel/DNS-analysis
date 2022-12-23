@@ -16,4 +16,4 @@ MX records:<br>
 WWW record:<br>
 93.184.216.34<br>
 
-$ ./domain-info.sh example.com
+$ ./domain-lookup.sh example.com
