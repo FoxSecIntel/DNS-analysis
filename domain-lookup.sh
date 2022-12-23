@@ -42,7 +42,8 @@ while read name; do
         # Check if the IP address is a public or private IP
         if [[ "$ip_address" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
             # Check if the IP address is a private IP
-            if [[ "$ip_address" =~ ^(10|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168)\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+if [[ "$ip_address" =~ ^(10(0|)\.[0-9]{1,3}|172.(1[6-9]|2[0-9]|3[01])|192\.168)\.[0-9]{1,3}\.[0-9]{1,3}$ ]
+]; then
                 # If the IP address is a private IP, increment the private IP count
                 ((private_ip_count++))
             else
@@ -60,3 +61,4 @@ echo "Number of lines: $line_count"
 echo "Number of public IPs: $public_ip_count"
 echo "Number of private IPs: $private_ip_count"
 echo "Number of errors: $error_count"
+
