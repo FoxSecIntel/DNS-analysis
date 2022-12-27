@@ -4,18 +4,8 @@ A domain's DNS records are important for determining how the domain functions an
 
 This repository will provide a bunch of scripts to make life easier when dealing with DNS at work ! 
 
-Find quickly Information about a domain
+domain-info.sh - Find quickly Information about a domain 
 $ ./domain-info.sh example.com
 
-SOA record: <br>
-ns.icann.org. noc.dns.icann.org. 2022091162 7200 3600 1209600 3600<br>
-NS records:<br>
-a.iana-servers.net.<br>
-b.iana-servers.net.<br>
-MX records:<br>
-0 .<br>
-WWW record:<br>
-93.184.216.34<br>
-
-Cycle through a list of A records, with custom domain's to see what resolves
+domain-analysis.sh - Cycle through a list of A records, with custom domain's to see what resolves
 $ ./domain-lookup.sh example.com
