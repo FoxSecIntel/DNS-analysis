@@ -4,8 +4,8 @@ A domain's DNS records are important for determining how the domain functions an
 
 This repository will provide a bunch of scripts to make life easier when dealing with DNS at work ! 
 
-domain-info.sh - Find quickly Information about a domain 
+domain-info.sh - Find quickly Information about a domain<br>
 $ ./domain-info.sh example.com
 
-domain-analysis.sh - Cycle through a list of A records, with custom domain's to see what resolves
+domain-analysis.sh - Cycle through a list of A records, with custom domain's to see what resolves<br>
 $ ./domain-lookup.sh example.com
