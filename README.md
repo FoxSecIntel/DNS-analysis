@@ -4,6 +4,9 @@ A domain's DNS records are important for determining how the domain functions an
 
 This repository will provide a bunch of scripts to make life easier when dealing with DNS at work ! 
 
+domain-age.sh - Determines the age of a domain name<br>
+$ ./domain-age.sh example.com
+
 domain-info.sh - Find quickly Information about a domain<br>
 $ ./domain-info.sh example.com
 
