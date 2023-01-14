@@ -1,14 +1,34 @@
 #!/bin/bash
 # set -x
 
-# This script shows the SOA, NS, and MX records for a specified domain
+# This script shows the SOA, NS, MX, CAA and TXT records for a specified domain
 
-# Check if a domain was specified
+# check if -a or -h option is specified
+while getopts "ah" opt; do
+  case $opt in
+    a)
+      DOMAIN=$2
+      echo -e "${BLUE}CAA record:${NC}"
+      dig CAA "$DOMAIN" +short
+      echo -e "${GREEN}TXT record:${NC}"
+      dig TXT "$DOMAIN" +short
+      ;;
+    h)
+      echo "This script shows the SOA, NS, MX, CAA, and TXT records for a specified domain"
+      exit 1
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
 if [ -z "$1" ]; then
     echo "Please specify a domain"
     exit 1
 fi
-
 DOMAIN=$1
 
 # Define some colors for use in the script
