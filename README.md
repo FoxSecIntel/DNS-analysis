@@ -13,5 +13,5 @@ $ ./domain-info.sh example.com
 domain-analysis.sh - Cycle through a list of A records, with custom domain's to see what resolves<br>
 $ ./domain-lookup.sh example.com
 
-domain-emailsecurityproviders.sh - Identify which MX records exist for a domain and who the email security provider is
+domain-emailsecurityproviders.sh - Identify which MX records exist for a domain and who the email security provider is<br>
 $ ./domain-emailsecurityproviders.sh
