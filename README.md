@@ -15,3 +15,6 @@ $ ./domain-lookup.sh example.com
 
 domain-emailsecurityproviders.sh - Identify which MX recordsfor a domain and who the email security provider is<br>
 $ ./domain-emailsecurityproviders.sh
+
+domain-registered.sh - Work out if a dns records is registered and live or not<BR>
+$ ./domain-registered.sh 
