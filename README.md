@@ -7,13 +7,13 @@ This repository will provide a bunch of scripts to make life easier when dealing
 domain-age.sh - Determines the age of a domain name
 $ ./domain-age.sh example.com
 
-domain-info.sh - Find quickly Information about a domain
+domain-info.sh - Find information about a domain from one script
 $ ./domain-info.sh example.com
 
 domain-analysis.sh - Cycle through a list of A records, with custom domain's to see what resolves
 $ ./domain-lookup.sh example.com
 
-domain-emailsecurityproviders.sh - Identify which MX recordsfor a domain and who the email security provider is
+domain-emailsecurityproviders.sh - Identify which MX records resoves for a domain and who the email security provider is
 $ ./domain-emailsecurityproviders.sh
 
 domain-registered.sh - Work out if a dns records is registered and live or not
