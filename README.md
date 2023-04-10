@@ -18,4 +18,7 @@ $ ./domain-emailsecurityproviders.sh
 
 domain-registered.sh - Work out if a dns records is registered and live or not
 $ ./domain-registered.sh
+
+domain-details.sh - Work out the CAA, DMARC and SPF of a domain 
+$ ./domain-registered.sh example.com
 </pre>
