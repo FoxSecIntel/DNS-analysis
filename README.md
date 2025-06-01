@@ -7,7 +7,7 @@ A collection of simple Bash scripts for performing DNS reconnaissance and discov
 ## 🚀 Features
 
 - Perform NS, MX, A, AAAA, TXT, and CNAME lookups
-- Identify open resolvers
+- Age of the domain
 - Get whois and domain metadata
 - Quickly parse DNS responses
 
