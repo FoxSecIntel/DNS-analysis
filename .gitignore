@@ -1,0 +1,5 @@
+# Ignore outputs and temp files
+*.log
+*.csv
+*.json
+*.out
