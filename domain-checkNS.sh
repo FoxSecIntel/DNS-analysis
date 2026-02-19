@@ -1,38 +1,51 @@
 #!/bin/bash
+set -euo pipefail
 
-# Define list of DNS server hostnames to check against
-dns_servers=("ns1.example.com" "ns2.example.com" "ns3.example.com")
+usage() {
+  cat <<'EOF'
+Usage:
+  domain-checkNS.sh -d <domain> [-n "ns1,ns2,ns3"]
 
-# Check if domain name is provided as command line argument
-if [ $# -eq 0 ]; then
-  echo "Please provide a domain name as a command line argument."
-  exit 1
-fi
+Options:
+  -d DOMAIN     Domain to check (required)
+  -n NS_LIST    Comma-separated expected NS list
+                default: ns1.example.com,ns2.example.com,ns3.example.com
+EOF
+}
 
-domain=$1
+domain=""
+expected_csv="ns1.example.com,ns2.example.com,ns3.example.com"
 
-# Extract name servers for domain using dig
-ns=$(dig +short NS $domain)
+while getopts ":d:n:h" opt; do
+  case "$opt" in
+    d) domain="$OPTARG" ;;
+    n) expected_csv="$OPTARG" ;;
+    h) usage; exit 0 ;;
+    \?) echo "Invalid option -$OPTARG"; usage; exit 1 ;;
+  esac
+done
 
-# Check if any name servers were found
-if [ -z "$ns" ]; then
-  echo "No name servers found for $domain."
-  exit 1
-fi
+[[ -n "$domain" ]] || { echo "Error: domain required"; usage; exit 1; }
 
-# Loop through list of DNS server hostnames and compare against name servers for domain
-for server in "${dns_servers[@]}"
-do
-  if echo "$ns" | grep -q "$server"; then
-    echo -e "\033[32mMatch found: $server is a name server for $domain.\033[0m"
+mapfile -t expected < <(echo "$expected_csv" | tr ',' '\n' | sed 's/\.$//' | tr '[:upper:]' '[:lower:]')
+mapfile -t found < <(dig +short NS "$domain" | sed 's/\.$//' | tr '[:upper:]' '[:lower:]')
+
+[[ ${#found[@]} -gt 0 ]] || { echo "No name servers found for $domain."; exit 1; }
+
+declare -a missing=()
+for ns in "${expected[@]}"; do
+  if printf '%s\n' "${found[@]}" | grep -qx "$ns"; then
+    echo -e "\033[32mMatch: $ns\033[0m"
   else
-    echo -e "\033[31mNo match found: $server is not a name server for $domain.\033[0m"
-    errors+=("$server")
+    echo -e "\033[31mMissing expected NS: $ns\033[0m"
+    missing+=("$ns")
   fi
 done
 
-# Check for errors and display actual name servers if there are any
-if [ ${#errors[@]} -ne 0 ]; then
-  echo -e "\n\033[31mThe following name servers were found for $domain:\033[0m"
-  echo "$ns"
+echo
+echo "Actual NS for $domain:"
+printf '%s\n' "${found[@]}"
+
+if [[ ${#missing[@]} -gt 0 ]]; then
+  exit 2
 fi

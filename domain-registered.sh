@@ -1,51 +1,50 @@
 #!/bin/bash
+set -euo pipefail
 
-# File containing the list of domain names
+usage() {
+  cat <<'EOF'
+Usage:
+  domain-registered.sh [-f domains_file]
+
+Options:
+  -f FILE   Input file with one domain per line (default: domains.txt)
+EOF
+}
+
 file="domains.txt"
+while getopts ":f:h" opt; do
+  case "$opt" in
+    f) file="$OPTARG" ;;
+    h) usage; exit 0 ;;
+    \?) echo "Invalid option -$OPTARG"; usage; exit 1 ;;
+  esac
+done
 
-# Initialize variables
-domains=()
+[[ -f "$file" ]] || { echo "Error: file not found: $file"; exit 1; }
+
 registered=0
 not_registered=0
 
-# Check if the file exists
-if [[ ! -f $file ]]; then
-    echo "Error: the file $file does not exist."
-    exit 1
-fi
-
-# Read the file and store the domain names in an array
-while read -r line; do
-    domains+=($line)
-done < "$file"
-
-# Get the number of domains
+mapfile -t domains < <(grep -v '^\s*$' "$file")
 num_domains=${#domains[@]}
 
-# Progress indicator
 echo "Checking $num_domains domains..."
 
-# Loop through each domain
 for ((i=0; i<num_domains; i++)); do
-  domain=${domains[i]}
+  domain="${domains[i]}"
+  output="$(whois "$domain" 2>&1 || true)"
 
-  # Use the 'whois' command to check if the domain is registered
-  output=$(whois $domain 2>&1)
-
-  if echo $output | grep -q "is free"
-  then
-    not_registered=$((not_registered + 1))
+  if echo "$output" | grep -qiE "is free|no match|not found|available"; then
+    ((not_registered+=1))
     echo -e "\n$domain is not registered."
   else
-    registered=$((registered + 1))
+    ((registered+=1))
     echo -n "."
   fi
 
-  # Print progress indicator
   echo -en "\r$((i+1))/$num_domains domains checked"
 done
 
-# Print summary
 echo -e "\n\nSummary:"
 echo "$registered domains are registered"
 echo "$not_registered domains are not registered"

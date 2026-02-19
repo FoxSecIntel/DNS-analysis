@@ -1,20 +1,32 @@
 #!/bin/bash
+set -euo pipefail
 
-# Set number of domain names to generate
-num_domains=13
+usage() {
+  cat <<'EOF'
+Usage:
+  domain-random-generator.sh [-n count]
 
-# List of TLDs
+Options:
+  -n COUNT   Number of domains to generate (default: 13)
+EOF
+}
+
+count=13
+while getopts ":n:h" opt; do
+  case "$opt" in
+    n) count="$OPTARG" ;;
+    h) usage; exit 0 ;;
+    \?) echo "Invalid option -$OPTARG"; usage; exit 1 ;;
+  esac
+done
+
+[[ "$count" =~ ^[0-9]+$ ]] || { echo "COUNT must be numeric"; exit 1; }
+
 tlds=(com net org io edu gov)
-
-# List of generic words
 words=(book shop mall car house)
 
-# Loop to generate the specified number of domain names
-for ((i=1; i<=$num_domains; i++))
-do
-  # Generate random domain name
+for ((i=1; i<=count; i++)); do
   domain_name="$(tr -dc 'a-z' < /dev/urandom | head -c 8).${tlds[RANDOM%${#tlds[@]}]}"
   main_word="${words[RANDOM%${#words[@]}]}"
-  # Print the generated domain name
-  echo $main_word$domain_name
+  echo "${main_word}${domain_name}"
 done
