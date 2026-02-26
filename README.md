@@ -59,8 +59,8 @@ Optional (for QA):
 ./domain-emailsecurityproviders.sh -f maildomains.txt
 
 # Cloudflare detection (single domain or file)
-python3 ./domain-cloudflare-check.py example.com
-python3 ./domain-cloudflare-check.py -f domains.txt --json
+python3 ./cloudflare-detector.py example.com
+python3 ./cloudflare-detector.py -f domains.txt --json
 ```
 
 ---
