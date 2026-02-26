@@ -7,6 +7,7 @@ import re
 import socket
 import subprocess
 import sys
+import shutil
 from pathlib import Path
 from typing import Dict, List, Tuple
 from urllib.error import URLError, HTTPError
@@ -36,7 +37,7 @@ def dns_ns_check(domain):
     ns_records = []  # type: List[str]
 
     # Prefer dig if available
-    if subprocess.call(["bash", "-lc", "command -v dig >/dev/null 2>&1"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+    if shutil.which("dig"):
         try:
             out = subprocess.check_output(["dig", "+short", "NS", domain], text=True, timeout=6)
             ns_records = [x.strip().rstrip(".") for x in out.splitlines() if x.strip()]
@@ -100,23 +101,38 @@ def ip_cf_check(ips):
     return False
 
 
+def cname_check(domain):
+    cnames = []
+    if shutil.which("dig"):
+        try:
+            out = subprocess.check_output(["dig", "+short", "CNAME", domain], text=True, timeout=6)
+            cnames = [x.strip().rstrip(".") for x in out.splitlines() if x.strip()]
+        except Exception:
+            cnames = []
+    is_cf = any("cloudflare" in c.lower() for c in cnames)
+    return is_cf, cnames
+
+
 def check_domain(domain):
     d = normalise_domain(domain)
 
     ns_match, ns_records = dns_ns_check(d)
+    cname_match, cnames = cname_check(d)
     hdr_match, headers = header_check(d)
     ips = resolve_ips(d)
     ip_match = ip_cf_check(ips)
 
     result = {
         "domain": d,
-        "cloudflare": bool(ns_match or hdr_match or ip_match),
+        "cloudflare": bool(ns_match or cname_match or hdr_match or ip_match),
         "signals": {
             "dns_ns": ns_match,
+            "dns_cname": cname_match,
             "headers": hdr_match,
             "ip_range": ip_match,
         },
         "ns_records": ns_records,
+        "cname_records": cnames,
         "resolved_ips": ips,
         "header_server": headers.get("server") if headers else None,
     }
@@ -142,6 +158,7 @@ def main() -> int:
     parser.add_argument("domains", nargs="*", help="One or more domains")
     parser.add_argument("-f", "--file", help="File with one domain per line")
     parser.add_argument("--json", action="store_true", help="Output JSON")
+    parser.add_argument("--no-color", action="store_true", help="Disable ANSI colours")
     args = parser.parse_args()
 
     targets = load_targets(args)
@@ -151,12 +168,23 @@ def main() -> int:
         print(json.dumps(results, indent=2))
         return 0
 
-    print(f"{'DOMAIN':<35} | {'CLOUDFLARE':<10} | SIGNALS")
-    print("-" * 90)
+    green = "\033[92m" if not args.no_color else ""
+    red = "\033[91m" if not args.no_color else ""
+    yellow = "\033[93m" if not args.no_color else ""
+    reset = "\033[0m" if not args.no_color else ""
+
+    print(f"{'DOMAIN':<35} | {'CLOUDFLARE':<12} | SIGNALS")
+    print("-" * 98)
     for r in results:
         sig = r["signals"]
-        sig_txt = f"dns={sig['dns_ns']}, hdr={sig['headers']}, ip={sig['ip_range']}"
-        print(f"{r['domain']:<35} | {('YES' if r['cloudflare'] else 'NO'):<10} | {sig_txt}")
+        sig_parts = []
+        for k in ("dns_ns", "dns_cname", "headers", "ip_range"):
+            v = sig.get(k, False)
+            col = green if v else red
+            sig_parts.append(f"{k}={col}{str(v).lower()}{reset}")
+
+        status = f"{green}YES{reset}" if r["cloudflare"] else f"{yellow}NO{reset}"
+        print(f"{r['domain']:<35} | {status:<12} | {', '.join(sig_parts)}")
 
     return 0
 
