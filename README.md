@@ -22,7 +22,6 @@ A practical Bash toolkit for DNS reconnaissance, mail-security checks, and domai
 - `whois`
 - `awk`, `sed`, `grep`
 - Python 3.8+
-- Python packages: `requests`, `dnspython`
 
 Optional (for QA):
 - `shellcheck`
@@ -47,10 +46,6 @@ Optional (for QA):
 # Check expected NS values
 ./domain-checkNS.sh -d example.com -n "ns1.example.com,ns2.example.com"
 
-# Detect Cloudflare hosting
-python3 ./cloudflare-detector.py example.com cloudflare.com
-python3 ./cloudflare-detector.py -f domains.txt --json
-
 # Domain age
 ./domain-age.sh example.com
 
@@ -62,6 +57,10 @@ python3 ./cloudflare-detector.py -f domains.txt --json
 
 # Email provider detection from MX
 ./domain-emailsecurityproviders.sh -f maildomains.txt
+
+# Cloudflare detection (single domain or file)
+python3 ./domain-cloudflare-check.py example.com
+python3 ./domain-cloudflare-check.py -f domains.txt --json
 ```
 
 ---
