@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from __future__ import annotations
 
 import argparse
 import ipaddress
@@ -9,6 +8,7 @@ import socket
 import subprocess
 import sys
 from pathlib import Path
+from typing import Dict, List, Tuple
 from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 
@@ -24,7 +24,7 @@ CF_CIDRS = [
 CF_NETS = [ipaddress.ip_network(c) for c in CF_CIDRS]
 
 
-def normalise_domain(raw: str) -> str:
+def normalise_domain(raw):
     d = raw.strip().lower()
     d = re.sub(r"^https?://", "", d)
     d = d.split("/")[0]
@@ -32,8 +32,8 @@ def normalise_domain(raw: str) -> str:
     return d
 
 
-def dns_ns_check(domain: str) -> tuple[bool, list[str]]:
-    ns_records: list[str] = []
+def dns_ns_check(domain):
+    ns_records = []  # type: List[str]
 
     # Prefer dig if available
     if subprocess.call(["bash", "-lc", "command -v dig >/dev/null 2>&1"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
@@ -56,7 +56,7 @@ def dns_ns_check(domain: str) -> tuple[bool, list[str]]:
     return is_cf, ns_records
 
 
-def header_check(domain: str) -> tuple[bool, dict]:
+def header_check(domain):
     headers_out = {}
     for scheme in ("https", "http"):
         url = f"{scheme}://{domain}"
@@ -76,7 +76,7 @@ def header_check(domain: str) -> tuple[bool, dict]:
     return False, headers_out
 
 
-def resolve_ips(domain: str) -> list[str]:
+def resolve_ips(domain):
     ips = set()
     try:
         infos = socket.getaddrinfo(domain, None)
@@ -88,7 +88,7 @@ def resolve_ips(domain: str) -> list[str]:
     return sorted(ips)
 
 
-def ip_cf_check(ips: list[str]) -> bool:
+def ip_cf_check(ips):
     for ip in ips:
         try:
             addr = ipaddress.ip_address(ip)
@@ -100,7 +100,7 @@ def ip_cf_check(ips: list[str]) -> bool:
     return False
 
 
-def check_domain(domain: str) -> dict:
+def check_domain(domain):
     d = normalise_domain(domain)
 
     ns_match, ns_records = dns_ns_check(d)
@@ -123,7 +123,7 @@ def check_domain(domain: str) -> dict:
     return result
 
 
-def load_targets(args: argparse.Namespace) -> list[str]:
+def load_targets(args):
     targets = list(args.domains or [])
     if args.file:
         p = Path(args.file)
