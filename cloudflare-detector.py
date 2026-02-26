@@ -5,13 +5,17 @@ import ipaddress
 import json
 import re
 import socket
-import subprocess
 import sys
-import shutil
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List
 from urllib.error import URLError, HTTPError
+from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+
+try:
+    import dns.resolver  # type: ignore
+except Exception:  # dnspython optional
+    dns = None
 
 # Representative Cloudflare anycast ranges (not exhaustive, but high-signal)
 CF_CIDRS = [
@@ -33,26 +37,37 @@ def normalise_domain(raw):
     return d
 
 
+def dns_query(domain, rtype):
+    records = []  # type: List[str]
+
+    # 1) dnspython path (preferred)
+    if dns is not None:
+        try:
+            answers = dns.resolver.resolve(domain, rtype)
+            records = [str(a).strip().rstrip('.') for a in answers]
+            if records:
+                return records
+        except Exception:
+            pass
+
+    # 2) DoH fallback (no dig/nslookup dependency)
+    try:
+        params = urlencode({"name": domain, "type": rtype})
+        req = Request(f"https://dns.google/resolve?{params}", headers={"User-Agent": "Mozilla/5.0"})
+        with urlopen(req, timeout=7) as r:
+            payload = json.loads(r.read().decode("utf-8", errors="ignore"))
+            for ans in payload.get("Answer", []) or []:
+                data = str(ans.get("data", "")).strip().rstrip('.')
+                if data:
+                    records.append(data)
+    except Exception:
+        pass
+
+    return records
+
+
 def dns_ns_check(domain):
-    ns_records = []  # type: List[str]
-
-    # Prefer dig if available
-    if shutil.which("dig"):
-        try:
-            out = subprocess.check_output(["dig", "+short", "NS", domain], text=True, timeout=6)
-            ns_records = [x.strip().rstrip(".") for x in out.splitlines() if x.strip()]
-        except Exception:
-            ns_records = []
-    else:
-        # Fallback nslookup
-        try:
-            out = subprocess.check_output(["nslookup", "-type=ns", domain], text=True, timeout=6)
-            for line in out.splitlines():
-                if "nameserver" in line.lower() and "=" in line:
-                    ns_records.append(line.split("=", 1)[1].strip().rstrip("."))
-        except Exception:
-            ns_records = []
-
+    ns_records = dns_query(domain, "NS")
     is_cf = any("cloudflare" in ns.lower() for ns in ns_records)
     return is_cf, ns_records
 
@@ -102,13 +117,7 @@ def ip_cf_check(ips):
 
 
 def cname_check(domain):
-    cnames = []
-    if shutil.which("dig"):
-        try:
-            out = subprocess.check_output(["dig", "+short", "CNAME", domain], text=True, timeout=6)
-            cnames = [x.strip().rstrip(".") for x in out.splitlines() if x.strip()]
-        except Exception:
-            cnames = []
+    cnames = dns_query(domain, "CNAME")
     is_cf = any("cloudflare" in c.lower() for c in cnames)
     return is_cf, cnames
 

@@ -11,7 +11,7 @@ A practical Bash toolkit for DNS reconnaissance, mail-security checks, and domai
 - Bulk subdomain host lookups from wordlists
 - Bulk registration checks from domain lists
 - Name server policy checks against expected NS values
-- Cloudflare hosting detection with DNS, header, and IP evidence
+- Cloudflare hosting detection with Python DNS (dnspython) plus DoH fallback, header, and IP evidence
 
 ---
 
@@ -22,6 +22,9 @@ A practical Bash toolkit for DNS reconnaissance, mail-security checks, and domai
 - `whois`
 - `awk`, `sed`, `grep`
 - Python 3.8+
+
+Optional Python package:
+- `dnspython` (preferred DNS resolver path for `cloudflare-detector.py`)
 
 Optional (for QA):
 - `shellcheck`
