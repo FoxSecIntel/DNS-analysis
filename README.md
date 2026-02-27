@@ -64,6 +64,9 @@ Optional (for QA):
 # Cloudflare detection (single domain or file)
 python3 ./cloudflare-detector.py example.com
 python3 ./cloudflare-detector.py -f domains.txt --json
+
+# Equivalent explicit format switch
+python3 ./cloudflare-detector.py -f domains.txt --output json
 ```
 
 ---

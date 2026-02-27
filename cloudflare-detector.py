@@ -166,15 +166,22 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Check whether domains are behind Cloudflare")
     parser.add_argument("domains", nargs="*", help="One or more domains")
     parser.add_argument("-f", "--file", help="File with one domain per line")
-    parser.add_argument("--json", action="store_true", help="Output JSON")
+    parser.add_argument("--json", action="store_true", help="Output JSON (legacy switch)")
+    parser.add_argument("--output", choices=["text", "json"], default="text", help="Output format")
     parser.add_argument("--no-color", action="store_true", help="Disable ANSI colours")
     args = parser.parse_args()
 
     targets = load_targets(args)
     results = [check_domain(t) for t in targets]
 
-    if args.json:
-        print(json.dumps(results, indent=2))
+    output_json = args.json or args.output == "json"
+    if output_json:
+        payload = {
+            "count": len(results),
+            "cloudflare_detected": sum(1 for r in results if r.get("cloudflare")),
+            "results": results,
+        }
+        print(json.dumps(payload, indent=2))
         return 0
 
     green = "\033[92m" if not args.no_color else ""
