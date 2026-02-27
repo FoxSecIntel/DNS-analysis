@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import base64
 import ipaddress
 import json
 import re
@@ -27,6 +28,7 @@ CF_CIDRS = [
     "2803:f800::/32", "2a06:98c0::/29", "2c0f:f248::/32",
 ]
 CF_NETS = [ipaddress.ip_network(c) for c in CF_CIDRS]
+HIDDEN_MESSAGE_B64 = "wqhWaWN0b3J5IGlzIG5vdCB3aW5uaW5nIGZvciBvdXJzZWx2ZXMsIGJ1dCBmb3Igb3RoZXJzLiAtIFRoZSBNYW5kYWxvcmlhbsKoCg=="
 
 
 def normalise_domain(raw):
@@ -166,10 +168,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Check whether domains are behind Cloudflare")
     parser.add_argument("domains", nargs="*", help="One or more domains")
     parser.add_argument("-f", "--file", help="File with one domain per line")
+    parser.add_argument("-m", action="store_true", help="Print hidden message")
     parser.add_argument("--json", action="store_true", help="Output JSON (legacy switch)")
     parser.add_argument("--output", choices=["text", "json"], default="text", help="Output format")
     parser.add_argument("--no-color", action="store_true", help="Disable ANSI colours")
     args = parser.parse_args()
+
+    if args.m:
+        print(base64.b64decode(HIDDEN_MESSAGE_B64).decode("utf-8", errors="replace"), end="")
+        return 0
 
     targets = load_targets(args)
     results = [check_domain(t) for t in targets]
