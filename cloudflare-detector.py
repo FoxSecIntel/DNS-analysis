@@ -13,6 +13,8 @@ from urllib.error import URLError, HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+VERSION = "1.2.0"
+
 try:
     import dns.resolver  # type: ignore
 except Exception:  # dnspython optional
@@ -172,7 +174,12 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", help="Output JSON (legacy switch)")
     parser.add_argument("--output", choices=["text", "json"], default="text", help="Output format")
     parser.add_argument("--no-color", action="store_true", help="Disable ANSI colours")
+    parser.add_argument("--version", action="store_true", help="Show script version")
     args = parser.parse_args()
+
+    if args.version:
+        print(f"cloudflare-detector.py {VERSION}")
+        return 0
 
     if args.m:
         print(base64.b64decode(HIDDEN_MESSAGE_B64).decode("utf-8", errors="replace"), end="")

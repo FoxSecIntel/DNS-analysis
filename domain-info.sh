@@ -1,6 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
+VERSION="1.2.0"
+if [[ "${1:-}" == "-v" || "${1:-}" == "--version" ]]; then
+  echo "domain-info.sh $VERSION"
+  exit 0
+fi
+
+
 m='wqhWaWN0b3J5IGlzIG5vdCB3aW5uaW5nIGZvciBvdXJzZWx2ZXMsIGJ1dCBmb3Igb3RoZXJzLiAtIFRoZSBNYW5kYWxvcmlhbsKoCg=='
 
 usage() {

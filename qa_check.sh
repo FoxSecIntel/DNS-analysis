@@ -1,6 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
+VERSION="1.2.0"
+if [[ "${1:-}" == "-v" || "${1:-}" == "--version" ]]; then
+  echo "qa_check.sh $VERSION"
+  exit 0
+fi
+
+
 repo_dir="$(cd "$(dirname "$0")" && pwd)"
 cd "$repo_dir"
 

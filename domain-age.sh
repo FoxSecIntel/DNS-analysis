@@ -1,6 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
+VERSION="1.2.0"
+if [[ "${1:-}" == "-v" || "${1:-}" == "--version" ]]; then
+  echo "domain-age.sh $VERSION"
+  exit 0
+fi
+
+
 usage() {
   echo "Usage: domain-age.sh <domain>"
 }
