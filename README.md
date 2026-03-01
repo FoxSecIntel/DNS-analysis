@@ -1,8 +1,26 @@
-# 🧠 DNS-analysis
+![Status](https://img.shields.io/badge/status-maintained-brightgreen)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 
-A practical Bash toolkit for DNS reconnaissance, mail-security checks, and domain metadata triage.
+# DNS-analysis
 
----
+A DNS reconnaissance and mail-security toolkit for rapid defensive triage workflows.
+
+## Why this project
+
+- **Impact:** Improves investigation speed for DNS, email-auth, and nameserver posture checks.
+- **Scale:** Supports analyst CLI usage and automation-friendly output patterns.
+- **Use case:** Domain security validation, email security assessment, and operational DNS triage.
+
+## Demo media
+
+- Screenshot: ![DNS-analysis terminal screenshot](docs/media/terminal-screenshot.png)
+- Demo GIF: ![DNS-analysis demo](docs/media/demo.gif)
+
+## Capability snapshot
+
+- DNS posture checks across NS, MX, TXT, CAA, DMARC, and SPF
+- Bulk lookup workflows for subdomains and registration checks
+- Cloudflare detection with resolver and DoH fallback
 
 ## ✅ Features
 
