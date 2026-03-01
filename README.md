@@ -51,6 +51,24 @@ Optional (for QA):
 
 ## Usage
 
+### Featured workflow: Cloudflare detection
+
+The Cloudflare detector is the flagship script in this repository.
+It combines DNS evidence, DoH fallback, and output modes designed for both analysts and automation.
+
+```bash
+# Cloudflare detection (single domain)
+python3 ./cloudflare-detector.py example.com
+
+# Bulk Cloudflare detection (JSON output)
+python3 ./cloudflare-detector.py -f domains.txt --json
+
+# Equivalent explicit format switch
+python3 ./cloudflare-detector.py -f domains.txt --output json
+```
+
+### Other workflows
+
 ```bash
 # Domain record summary
 ./domain-info.sh example.com
@@ -78,13 +96,6 @@ Optional (for QA):
 
 # Email provider detection from MX
 ./domain-emailsecurityproviders.sh -f maildomains.txt
-
-# Cloudflare detection (single domain or file)
-python3 ./cloudflare-detector.py example.com
-python3 ./cloudflare-detector.py -f domains.txt --json
-
-# Equivalent explicit format switch
-python3 ./cloudflare-detector.py -f domains.txt --output json
 ```
 
 ---
