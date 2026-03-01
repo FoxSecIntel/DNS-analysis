@@ -14,7 +14,6 @@ A DNS reconnaissance and mail-security toolkit for rapid defensive triage workfl
 ## Demo media
 
 - Screenshot: ![DNS-analysis terminal screenshot](docs/media/terminal-screenshot.png)
-- Demo GIF: ![DNS-analysis demo](docs/media/demo.gif)
 
 ## Capability snapshot
 
