@@ -8,7 +8,7 @@ if [[ "${1:-}" == "-v" || "${1:-}" == "--version" ]]; then
 fi
 
 
-m='wqhWaWN0b3J5IGlzIG5vdCB3aW5uaW5nIGZvciBvdXJzZWx2ZXMsIGJ1dCBmb3Igb3RoZXJzLiAtIFRoZSBNYW5kYWxvcmlhbsKoCg=='
+HIDDEN_MESSAGE_B64='wqhWaWN0b3J5IGlzIG5vdCB3aW5uaW5nIGZvciBvdXJzZWx2ZXMsIGJ1dCBmb3Igb3RoZXJzLiAtIFRoZSBNYW5kYWxvcmlhbsKoCg=='
 
 usage() {
   cat <<'EOF'
@@ -51,7 +51,7 @@ while getopts ":ahmjNc" opt; do
     N) no_color=true ;;
     c) compact=true ;;
     h) usage; exit 0 ;;
-    m) echo "$m" | base64 --decode; exit 0 ;;
+    m) echo "$HIDDEN_MESSAGE_B64" | base64 --decode; exit 0 ;;
     \?) echo "Invalid option: -$OPTARG"; usage; exit 1 ;;
   esac
 done
