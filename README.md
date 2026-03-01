@@ -85,3 +85,12 @@ python3 ./cloudflare-detector.py -f domains.txt --output json
 ## ⚖️ Legal
 
 Use only on domains/systems you own or are explicitly authorized to assess.
+
+## Quick Demo
+
+```bash
+# 1) Run a core check
+# 2) Request JSON output
+# 3) Pipe into jq for analyst workflows
+```
+
