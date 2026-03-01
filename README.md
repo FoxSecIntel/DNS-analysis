@@ -22,7 +22,7 @@ A DNS reconnaissance and mail-security toolkit for rapid defensive triage workfl
 - Bulk lookup workflows for subdomains and registration checks
 - Cloudflare detection with resolver and DoH fallback
 
-## ✅ Features
+## Features
 
 - NS, MX, A/AAAA, TXT, CAA, DMARC, SPF checks
 - Domain creation/age lookup
@@ -33,7 +33,7 @@ A DNS reconnaissance and mail-security toolkit for rapid defensive triage workfl
 
 ---
 
-## 📦 Requirements
+## Requirements
 
 - `dig`
 - `host`
@@ -49,7 +49,7 @@ Optional (for QA):
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ```bash
 # Domain record summary
@@ -89,7 +89,7 @@ python3 ./cloudflare-detector.py -f domains.txt --output json
 
 ---
 
-## 🧪 QA / Validation
+## QA / Validation
 
 ```bash
 ./qa_check.sh
@@ -100,7 +100,7 @@ python3 ./cloudflare-detector.py -f domains.txt --output json
 
 ---
 
-## ⚖️ Legal
+## Legal
 
 Use only on domains/systems you own or are explicitly authorized to assess.
 
