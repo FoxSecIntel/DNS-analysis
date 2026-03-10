@@ -3,3 +3,10 @@
 *.csv
 *.json
 *.out
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS noise
+.DS_Store

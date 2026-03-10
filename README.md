@@ -21,6 +21,14 @@ A DNS reconnaissance and mail-security toolkit for rapid defensive triage workfl
 - Bulk lookup workflows for subdomains and registration checks
 - Cloudflare detection with resolver and DoH fallback
 
+## Detection notes and limitations
+
+- Cloudflare detection is signal-based, not authoritative attribution.
+- IP range checks use representative Cloudflare ranges and may not be exhaustive.
+- Header checks depend on live HTTP(S) responses and can be affected by WAF behaviour, redirects, or origin restrictions.
+- DNS data can vary by resolver, cache state, and propagation timing.
+- Treat output as triage evidence and verify critical findings with secondary sources.
+
 ## Features
 
 - NS, MX, A/AAAA, TXT, CAA, DMARC, SPF checks
