@@ -20,6 +20,27 @@ A DNS reconnaissance and mail-security toolkit for rapid defensive triage workfl
 - DNS posture checks across NS, MX, TXT, CAA, DMARC, and SPF
 - Bulk lookup workflows for subdomains and registration checks
 - Cloudflare detection with resolver and DoH fallback
+- `domain-security-monitor.py` for confidence-scored domain monitoring with structured JSON output
+
+### New monitor quick start
+
+```bash
+python3 ./domain-security-monitor.py --domain example.com --output json
+python3 ./domain-security-monitor.py --input-file domains.txt --output json
+```
+
+Configuration files:
+
+- `config/expected_ns.json`: default nameservers plus per-domain overrides
+- `config/dkim_selectors.json`: per-domain authoritative DKIM selector hints
+
+The monitor includes:
+
+- per-domain expected nameserver compliance
+- DKIM selector-aware checks with confidence labels
+- RDAP-first expiry lookup with WHOIS fallback
+- retry and backoff on DNS and HTTP operations
+- status and confidence metadata on each signal
 
 ## Detection notes and limitations
 

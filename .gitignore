@@ -1,8 +1,11 @@
 # Ignore outputs and temp files
 *.log
 *.csv
-*.json
 *.out
+
+# Output JSON (keep config JSON tracked)
+output*.json
+report*.json
 
 # Python cache
 __pycache__/
