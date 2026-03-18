@@ -42,8 +42,6 @@ The monitor includes:
 - retry and backoff on DNS and HTTP operations
 - status and confidence metadata on each signal
 
-## Cloudflare detector screenshot
-
 ![Cloudflare detector terminal output](docs/media/cloudflare-detector-output.jpg)
 
 ## Detection notes and limitations
