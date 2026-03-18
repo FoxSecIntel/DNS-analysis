@@ -1,155 +1,132 @@
-![Status](https://img.shields.io/badge/status-maintained-brightgreen)
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+```text
+██████╗ ███╗   ██╗███████╗
+██╔══██╗████╗  ██║██╔════╝
+██║  ██║██╔██╗ ██║███████╗
+██║  ██║██║╚██╗██║╚════██║
+██████╔╝██║ ╚████║███████║
+╚═════╝ ╚═╝  ╚═══╝╚══════╝
+```
 
-# DNS-analysis
+**DNS-analysis: rapid defensive triage and infrastructure footprinting for SOC and threat hunting workflows.**
 
-A DNS reconnaissance and mail-security toolkit for rapid defensive triage workflows.
+---
 
-## Why this project
+## Instant Setup
 
-- **Impact:** Improves investigation speed for DNS, email-auth, and nameserver posture checks.
-- **Scale:** Supports analyst CLI usage and automation-friendly output patterns.
-- **Use case:** Domain security validation, email security assessment, and operational DNS triage.
-
-## Demo media
-
-- Screenshot: ![DNS-analysis terminal screenshot](docs/media/terminal-screenshot.png)
-
-## Capability snapshot
-
-- DNS posture checks across NS, MX, TXT, CAA, DMARC, and SPF
-- Bulk lookup workflows for subdomains and registration checks
-- Cloudflare detection with resolver and DoH fallback
-- `domain-security-monitor.py` for confidence-scored domain monitoring with structured JSON output
-
-### New monitor quick start
+> [!TIP]
+> Designed for fast start on Debian or Ubuntu. Copy, paste, run.
 
 ```bash
+sudo apt update && sudo apt install -y dnsutils bind9-host whois python3 python3-pip jq git
+git clone https://github.com/FoxSecIntel/DNS-analysis.git
+cd DNS-analysis
+python3 -m pip install --user dnspython
+```
+
+---
+
+## Golden Triage Workflow
+
+This repo is optimised for **operator workflows**, not script collecting.
+Use the scenario that matches your incident or monitoring task.
+
+### Scenario A: Threat triage
+**I need to quickly profile a suspicious domain.**
+
+```bash
+./domain-info.sh --domain suspicious-example.com
+```
+
+Use this first for fast DNS context before deeper pivots.
+
+---
+
+### Scenario B: Brand monitoring and integrity checks
+**I need to check key domains for unauthorised NS or email-security drift.**
+
+Single domain:
+```bash
 python3 ./domain-security-monitor.py --domain example.com --output json
+```
+
+Batch:
+```bash
 python3 ./domain-security-monitor.py --input-file domains.txt --output json
 ```
 
-Configuration files:
+This includes nameserver policy checks, SPF/DMARC/DKIM posture, and expiry visibility with confidence metadata.
 
-- `config/expected_ns.json`: default nameservers plus per-domain overrides
-- `config/dkim_selectors.json`: per-domain authoritative DKIM selector hints
+---
 
-The monitor includes:
+### Scenario C: CDN or WAF bypass investigation
+**I need origin evidence for a domain using Cloudflare.**
 
-- per-domain expected nameserver compliance
-- DKIM selector-aware checks with confidence labels
-- RDAP-first expiry lookup with WHOIS fallback
-- retry and backoff on DNS and HTTP operations
-- status and confidence metadata on each signal
+```bash
+python3 ./cloudflare-detector.py --domain target.example
+```
+
+Use this to evaluate whether a domain is truly fronted by Cloudflare and identify signal quality.
 
 ![Cloudflare detector terminal output](docs/media/cloudflare-detector-output.jpg)
 
-## Detection notes and limitations
+---
 
-- Cloudflare detection is signal-based, not authoritative attribution.
-- IP range checks use representative Cloudflare ranges and may not be exhaustive.
-- Header checks depend on live HTTP(S) responses and can be affected by WAF behaviour, redirects, or origin restrictions.
-- DNS data can vary by resolver, cache state, and propagation timing.
-- Treat output as triage evidence and verify critical findings with secondary sources.
+## Tool Reference
 
-## Features
-
-- NS, MX, A/AAAA, TXT, CAA, DMARC, SPF checks
-- Domain creation/age lookup
-- Bulk subdomain host lookups from wordlists
-- Bulk registration checks from domain lists
-- Name server policy checks against expected NS values
-- Cloudflare hosting detection with Python DNS (dnspython) plus DoH fallback, header, and IP evidence
+| Script | Primary Use Case | Best For |
+|---|---|---|
+| `domain-info.sh` | Quick DNS posture summary | First-pass incident triage |
+| `domain-security-monitor.py` | Structured domain security checks with confidence + data source metadata | Brand monitoring, recurring control checks |
+| `domain-checkNS.sh` | Nameserver integrity validation | Drift detection and change verification |
+| `cloudflare-detector.py` | Cloudflare signal analysis and origin exposure hints | CDN/WAF bypass investigations |
+| `domain_security_report.py` | Aggregated reporting workflows | Scheduled reporting and analyst summaries |
+| `qa_check.sh` | Local quality checks for repo scripts | Safe pre-commit validation |
 
 ---
 
-## Requirements
+## Advanced Automation (JSON)
 
-- `dig`
-- `host`
-- `whois`
-- `awk`, `sed`, `grep`
-- Python 3.8+
+> [!TIP]
+> The monitor output is designed for machine filtering and SOC pipelines.
 
-Optional Python package:
-- `dnspython` (preferred DNS resolver path for `cloudflare-detector.py`)
-
-Optional (for QA):
-- `shellcheck`
-
----
-
-## Usage
-
-### Featured workflow: Cloudflare detection
-
-The Cloudflare detector is the flagship script in this repository.
-It combines DNS evidence, DoH fallback, and output modes designed for both analysts and automation.
+### 1) Find low-confidence findings in batch output
 
 ```bash
-# Cloudflare detection (single domain)
-python3 ./cloudflare-detector.py example.com
-
-# Bulk Cloudflare detection (JSON output)
-python3 ./cloudflare-detector.py -f domains.txt --json
-
-# Equivalent explicit format switch
-python3 ./cloudflare-detector.py -f domains.txt --output json
+python3 ./domain-security-monitor.py --input-file domains.txt --output json \
+| jq '.results[] | {domain, lowConfidenceSignals: (.signals | to_entries | map(select(.value.confidence == "low")))} | select(.lowConfidenceSignals | length > 0)'
 ```
 
-### Other workflows
+### 2) Show failing or warning controls only
 
 ```bash
-# Domain record summary
-./domain-info.sh example.com
-
-# CAA + TXT only
-./domain-info.sh -a example.com
-
-# DMARC/SPF/CAA quick email-security detail
-./domain-details.sh example.com
-
-# Wordlist host lookup (uses names file)
-./domain-lookup.sh -d example.com -n names.txt
-
-# Check expected NS values
-./domain-checkNS.sh -d example.com -n "ns1.example.com,ns2.example.com"
-
-# Domain age
-./domain-age.sh example.com
-
-# Registration checks (bulk)
-./domain-registered.sh -f domains.txt
-
-# Generate random candidate domains
-./domain-random-generator.sh -n 20
-
-# Email provider detection from MX
-./domain-emailsecurityproviders.sh -f maildomains.txt
+python3 ./domain-security-monitor.py --input-file domains.txt --output json \
+| jq '.results[] | {domain, issues: (.signals | to_entries | map(select(.value.status == "fail" or .value.status == "warn")))} | select(.issues | length > 0)'
 ```
 
 ---
 
-## QA / Validation
+## Output Example (Placeholder)
 
-```bash
-./qa_check.sh
-```
+> [!TIP]
+> Replace this with a high-contrast terminal screenshot (Catppuccin or Tokyo Night style) showing a successful monitor run.
 
-- runs `bash -n` syntax checks across `*.sh`
-- runs `shellcheck` when installed
+`docs/media/terminal-screenshot.png`
 
 ---
 
-## Legal
+## Contributing
 
-Use only on domains/systems you own or are explicitly authorized to assess.
+- Keep additions workflow-driven.
+- Prefer confidence-scored outputs over binary pass/fail when signal quality varies.
+- Include JSON examples when adding new checks.
 
-## Quick Demo
+---
 
-```bash
-# 1) Run a core check
-# 2) Request JSON output
-# 3) Pipe into jq for analyst workflows
-```
+## Legal and Safety
 
+> [!WARNING]
+> Use these tools only on domains and infrastructure you own or are explicitly authorised to assess. Unauthorised scanning, probing, or surveillance may violate law, policy, or contractual terms.
+
+## License
+
+Apache License 2.0
