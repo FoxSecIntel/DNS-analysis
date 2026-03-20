@@ -28,6 +28,7 @@ from urllib.request import Request, urlopen
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_EXPECTED_NS_FILE = BASE_DIR / "config" / "expected_ns.json"
 DEFAULT_DKIM_SELECTORS_FILE = BASE_DIR / "config" / "dkim_selectors.json"
+VERSION = "1.0.0"
 
 
 @dataclass
@@ -280,6 +281,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--expected-ns", default=str(DEFAULT_EXPECTED_NS_FILE), help="Expected nameserver policy JSON")
     p.add_argument("--dkim-selectors", default=str(DEFAULT_DKIM_SELECTORS_FILE), help="Per-domain DKIM selectors JSON")
     p.add_argument("--output", choices=["json"], default="json")
+    p.add_argument("--version", action="version", version=f"domain-security-monitor {VERSION}")
     return p.parse_args()
 
 
