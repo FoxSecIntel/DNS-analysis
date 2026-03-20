@@ -306,6 +306,10 @@ def load_domains(args: argparse.Namespace) -> list[str]:
     return dedup
 
 
+def _md_cell(value: Any) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ").strip()
+
+
 def render_markdown(results: list[dict[str, Any]]) -> str:
     lines = [
         "# Domain Security Monitor Report",
@@ -339,11 +343,11 @@ def render_markdown(results: list[dict[str, Any]]) -> str:
         lines.append("")
 
         lines.append("| Signal | Status | Confidence | Data source |")
-        lines.append("|---|---|---|---|")
+        lines.append("| --- | --- | --- | --- |")
         for name, sig in signals.items():
             sig = sig or {}
             lines.append(
-                f"| `{name}` | {sig.get('status', 'unknown')} | {sig.get('confidence', 'low')} | {sig.get('data_source', 'unknown')} |"
+                f"| {_md_cell(name)} | {_md_cell(sig.get('status', 'unknown'))} | {_md_cell(sig.get('confidence', 'low'))} | {_md_cell(sig.get('data_source', 'unknown'))} |"
             )
 
         lines.append("")
