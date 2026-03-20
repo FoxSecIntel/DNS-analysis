@@ -280,7 +280,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--input-file", help="Batch file with one domain per line")
     p.add_argument("--expected-ns", default=str(DEFAULT_EXPECTED_NS_FILE), help="Expected nameserver policy JSON")
     p.add_argument("--dkim-selectors", default=str(DEFAULT_DKIM_SELECTORS_FILE), help="Per-domain DKIM selectors JSON")
-    p.add_argument("--output", choices=["json"], default="json")
+    p.add_argument("--output", choices=["json", "markdown"], default="json")
     p.add_argument("--version", action="version", version=f"domain-security-monitor {VERSION}")
     return p.parse_args()
 
@@ -306,6 +306,59 @@ def load_domains(args: argparse.Namespace) -> list[str]:
     return dedup
 
 
+def render_markdown(results: list[dict[str, Any]]) -> str:
+    lines = [
+        "# Domain Security Monitor Report",
+        "",
+        f"Domains checked: **{len(results)}**",
+        "",
+    ]
+
+    for item in results:
+        domain = item.get("domain", "unknown")
+        generated = item.get("generated_at_utc", "")
+        signals = item.get("signals", {})
+
+        lines.append(f"## {domain}")
+        lines.append("")
+        if generated:
+            lines.append(f"- Generated (UTC): `{generated}`")
+
+        # quick summary counts
+        status_counts = {"pass": 0, "warn": 0, "fail": 0, "unknown": 0}
+        for sig in signals.values():
+            st = str((sig or {}).get("status", "unknown")).lower()
+            status_counts[st] = status_counts.get(st, 0) + 1
+        lines.append(
+            "- Summary: "
+            f"pass={status_counts.get('pass', 0)}, "
+            f"warn={status_counts.get('warn', 0)}, "
+            f"fail={status_counts.get('fail', 0)}, "
+            f"unknown={status_counts.get('unknown', 0)}"
+        )
+        lines.append("")
+
+        lines.append("| Signal | Status | Confidence | Data source |")
+        lines.append("|---|---|---|---|")
+        for name, sig in signals.items():
+            sig = sig or {}
+            lines.append(
+                f"| `{name}` | {sig.get('status', 'unknown')} | {sig.get('confidence', 'low')} | {sig.get('data_source', 'unknown')} |"
+            )
+
+        lines.append("")
+        lines.append("<details>")
+        lines.append("<summary>Signal details</summary>")
+        lines.append("")
+        lines.append("```json")
+        lines.append(json.dumps(signals, indent=2))
+        lines.append("```")
+        lines.append("</details>")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def main() -> int:
     args = parse_args()
     domains = load_domains(args)
@@ -317,7 +370,11 @@ def main() -> int:
     dkim_cfg = load_json(Path(args.dkim_selectors), {})
 
     results = [analyse_domain(d, expected_cfg, dkim_cfg) for d in domains]
-    print(json.dumps({"count": len(results), "results": results}, indent=2))
+
+    if args.output == "markdown":
+        print(render_markdown(results), end="")
+    else:
+        print(json.dumps({"count": len(results), "results": results}, indent=2))
     return 0
 
 
