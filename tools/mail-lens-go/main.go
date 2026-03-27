@@ -67,10 +67,10 @@ var asnMap = map[string]string{
 
 func main() {
 	var (
-		fileArg   = flag.String("f", "", "Path to file with one domain per line")
-		workers   = flag.Int("workers", 20, "Number of concurrent workers for file input")
-		timeout   = flag.Duration("timeout", 2*time.Second, "Per-lookup timeout")
-		jsonOut   = flag.Bool("json", false, "Output as JSON")
+		fileArg = flag.String("f", "", "Path to file with one domain per line")
+		workers = flag.Int("workers", 20, "Number of concurrent workers for file input")
+		timeout = flag.Duration("timeout", 2*time.Second, "Per-lookup timeout")
+		jsonOut = flag.Bool("json", false, "Output as JSON")
 	)
 	flag.Parse()
 
