@@ -71,8 +71,14 @@ func main() {
 		workers = flag.Int("workers", 20, "Number of concurrent workers for file input")
 		timeout = flag.Duration("timeout", 2*time.Second, "Per-lookup timeout")
 		jsonOut = flag.Bool("json", false, "Output as JSON")
+		mEgg    = flag.Bool("m", false, "") // intentionally undocumented
 	)
 	flag.Parse()
+
+	if *mEgg {
+		fmt.Println("Victory is not winning for ourselves, but for others. - The Mandalorian")
+		return
+	}
 
 	var domains []string
 	if *fileArg != "" {
