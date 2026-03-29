@@ -81,6 +81,7 @@ Use this to evaluate whether a domain is truly fronted by Cloudflare and identif
 | `cloudflare-detector.py` | Cloudflare signal analysis and origin exposure hints | CDN/WAF bypass investigations |
 | `domain_security_report.py` | Aggregated reporting workflows | Scheduled reporting and analyst summaries |
 | `qa_check.sh` | Local quality checks for repo scripts | Safe pre-commit validation |
+| `tools/domain-posture-go/domain-posture` | Multi-threaded DNS and TLS posture reconnaissance with headers, redirect, cert expiry, security.txt, and WHOIS age | Batch triage and JSON pipeline ingestion |
 
 ---
 
