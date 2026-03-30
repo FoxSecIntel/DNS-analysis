@@ -4,7 +4,7 @@
 
 ## Features
 
-- Single-domain mode (`--domain`)
+- Single-domain mode (`--domain`) or positional domain argument
 - File input mode (`--file`, newline-delimited)
 - Worker pool concurrency (`--concurrency`, default `10`)
 - Per-domain timeout protection (8 seconds)
@@ -18,7 +18,10 @@
 - TLS certificate expiry and days remaining
 - WHOIS creation date extraction and domain age (days)
 - Human-readable table output (default)
-- JSON output (`--json`)
+- JSON output (`--json` or `--output json`)
+- CSV output (`--output csv`)
+- HTML output (`--output html`)
+- Hidden easter egg (`-m` or `--m`)
 
 ## Build
 

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/tls"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -46,20 +47,45 @@ type Result struct {
 func main() {
 	var domainFlag string
 	var fileFlag string
+	var outputFlag string
 	var jsonOut bool
+	var mandalorian bool
 	var concurrency int
 
 	flag.StringVar(&domainFlag, "domain", "", "Single domain to analyse")
 	flag.StringVar(&fileFlag, "file", "", "File containing newline-delimited domains")
+	flag.StringVar(&outputFlag, "output", "table", "Output format: table, json, csv, html")
 	flag.BoolVar(&jsonOut, "json", false, "Output as JSON")
+	flag.BoolVar(&mandalorian, "m", false, "")
 	flag.IntVar(&concurrency, "concurrency", 10, "Worker pool concurrency")
-	flag.Parse()
+
+	cleanArgs, positionalDomain := preprocessArgs(os.Args[1:])
+	if err := flag.CommandLine.Parse(cleanArgs); err != nil {
+		log.Fatalf("Unable to parse arguments: %v", err)
+	}
+
+	if mandalorian {
+		fmt.Println("Victory is not winning for ourselves, but for others. - The Mandalorian")
+		return
+	}
+
+	if domainFlag == "" && positionalDomain != "" {
+		domainFlag = positionalDomain
+	}
 
 	if domainFlag == "" && fileFlag == "" {
-		log.Fatal("Provide either --domain or --file")
+		log.Fatal("Provide a domain via positional argument, --domain, or --file")
 	}
 	if concurrency < 1 {
 		concurrency = 1
+	}
+
+	if jsonOut {
+		outputFlag = "json"
+	}
+	outputFlag = strings.ToLower(strings.TrimSpace(outputFlag))
+	if outputFlag != "table" && outputFlag != "json" && outputFlag != "csv" && outputFlag != "html" {
+		log.Fatalf("Unsupported output format: %s", outputFlag)
 	}
 
 	domains, err := collectDomains(domainFlag, fileFlag)
@@ -72,16 +98,51 @@ func main() {
 
 	results := runPool(domains, concurrency)
 
-	if jsonOut {
+	switch outputFlag {
+	case "json":
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(results); err != nil {
 			log.Fatalf("Unable to encode JSON: %v", err)
 		}
-		return
+	case "csv":
+		if err := printCSV(results); err != nil {
+			log.Fatalf("Unable to render CSV: %v", err)
+		}
+	case "html":
+		printHTML(results)
+	default:
+		printTable(results)
+	}
+}
+
+func preprocessArgs(args []string) ([]string, string) {
+	clean := make([]string, 0, len(args))
+	positionalDomain := ""
+	skipNext := false
+
+	for i := 0; i < len(args); i++ {
+		if skipNext {
+			skipNext = false
+			continue
+		}
+		a := args[i]
+		if strings.HasPrefix(a, "-") {
+			clean = append(clean, a)
+			if (a == "--domain" || a == "-domain" || a == "--file" || a == "-file" || a == "--output" || a == "-output" || a == "--concurrency" || a == "-concurrency") && i+1 < len(args) {
+				clean = append(clean, args[i+1])
+				skipNext = true
+			}
+			continue
+		}
+		if positionalDomain == "" {
+			positionalDomain = a
+		} else {
+			clean = append(clean, a)
+		}
 	}
 
-	printTable(results)
+	return clean, positionalDomain
 }
 
 func collectDomains(single string, filePath string) ([]string, error) {
@@ -419,6 +480,67 @@ func printTable(results []Result) {
 		)
 	}
 	_ = w.Flush()
+}
+
+func printCSV(results []Result) error {
+	w := csv.NewWriter(os.Stdout)
+	headers := []string{"domain", "a_records", "aaaa_records", "https_reachable", "redirect_final_url", "security_txt_status", "strict_transport_security", "content_security_policy", "x_frame_options", "certificate_expiry", "cert_days_remaining", "domain_age_days", "whois_created_date_raw", "errors"}
+	if err := w.Write(headers); err != nil {
+		return err
+	}
+	for _, r := range results {
+		errLine := strings.Join(r.Errors, " | ")
+		row := []string{
+			r.Domain,
+			joinOrDash(r.ARecords),
+			joinOrDash(r.AAAARecords),
+			fmt.Sprintf("%t", r.HTTPSReachable),
+			r.RedirectFinalURL,
+			fmt.Sprintf("%d", r.SecurityTxtStatus),
+			r.StrictTransport,
+			r.ContentSecurity,
+			r.XFrameOptions,
+			r.CertificateExpiry,
+			fmt.Sprintf("%d", r.CertDaysRemaining),
+			fmt.Sprintf("%d", r.DomainAgeDays),
+			r.WhoisCreatedDateRaw,
+			errLine,
+		}
+		if err := w.Write(row); err != nil {
+			return err
+		}
+	}
+	w.Flush()
+	return w.Error()
+}
+
+func printHTML(results []Result) {
+	fmt.Println("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>domain-posture</title><style>body{font-family:Arial,sans-serif;margin:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 8px;font-size:12px;text-align:left}th{background:#f2f2f2}code{white-space:pre-wrap}</style></head><body>")
+	fmt.Println("<h1>domain-posture report</h1>")
+	fmt.Println("<table><thead><tr><th>Domain</th><th>A</th><th>AAAA</th><th>HTTPS</th><th>Redirect</th><th>security.txt</th><th>HSTS</th><th>CSP</th><th>XFO</th><th>Cert days</th><th>Whois age</th><th>Notes</th></tr></thead><tbody>")
+	for _, r := range results {
+		notes := strings.Join(r.Errors, " | ")
+		fmt.Printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%t</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td><td><code>%s</code></td></tr>\n",
+			htmlEscape(r.Domain),
+			htmlEscape(joinOrDash(r.ARecords)),
+			htmlEscape(joinOrDash(r.AAAARecords)),
+			r.HTTPSReachable,
+			htmlEscape(r.RedirectFinalURL),
+			r.SecurityTxtStatus,
+			htmlEscape(r.StrictTransport),
+			htmlEscape(r.ContentSecurity),
+			htmlEscape(r.XFrameOptions),
+			r.CertDaysRemaining,
+			r.DomainAgeDays,
+			htmlEscape(notes),
+		)
+	}
+	fmt.Println("</tbody></table></body></html>")
+}
+
+func htmlEscape(v string) string {
+	replacer := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", "\"", "&quot;", "'", "&#39;")
+	return replacer.Replace(v)
 }
 
 func joinOrDash(v []string) string {
