@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -67,12 +68,13 @@ var asnMap = map[string]string{
 
 func main() {
 	var (
-		fileArg = flag.String("f", "", "Path to file with one domain per line")
-		workers = flag.Int("workers", 20, "Number of concurrent workers for file input")
-		timeout = flag.Duration("timeout", 2*time.Second, "Per-lookup timeout")
-		jsonOut = flag.Bool("json", false, "Output as JSON")
-		mEgg    = flag.Bool("m", false, "") // intentionally undocumented
-		author  = flag.Bool("a", false, "Show author and repository details")
+		fileArg   = flag.String("f", "", "Path to file with one domain per line")
+		workers   = flag.Int("workers", 20, "Number of concurrent workers for file input")
+		timeout   = flag.Duration("timeout", 2*time.Second, "Per-lookup timeout")
+		jsonOut   = flag.Bool("json", false, "Output as JSON")
+		outputArg = flag.String("output", "table", "Output format: table, json, csv, html")
+		mEgg      = flag.Bool("m", false, "") // intentionally undocumented
+		author    = flag.Bool("a", false, "Show author and repository details")
 	)
 	flag.Parse()
 
@@ -98,7 +100,7 @@ func main() {
 		domains = d
 	} else {
 		if flag.NArg() < 1 {
-			fmt.Fprintln(os.Stderr, "Usage: mail-lens [-f domains.txt] [--workers 20] [--json] <domain>")
+			fmt.Fprintln(os.Stderr, "Usage: mail-lens [-f domains.txt] [--workers 20] [--json] [--output table|json|csv|html] <domain>")
 			os.Exit(2)
 		}
 		domain := normaliseDomain(flag.Arg(0))
@@ -123,14 +125,23 @@ func main() {
 
 	sort.Slice(results, func(i, j int) bool { return results[i].Domain < results[j].Domain })
 
+	out := strings.ToLower(strings.TrimSpace(*outputArg))
 	if *jsonOut {
+		out = "json"
+	}
+
+	switch out {
+	case "json":
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
 		_ = enc.Encode(results)
-		return
+	case "csv":
+		emitCSV(results)
+	case "html":
+		emitHTML(results)
+	default:
+		printTable(results)
 	}
-
-	printTable(results)
 }
 
 func readDomainsFromFile(path string) ([]string, error) {
@@ -419,6 +430,53 @@ func printTable(results []Result) {
 		)
 	}
 	_ = w.Flush()
+}
+
+func emitCSV(results []Result) {
+	w := csv.NewWriter(os.Stdout)
+	_ = w.Write([]string{"domain", "primary_mx", "provider", "security_stack", "asn", "organisation", "status"})
+	for _, r := range results {
+		status := "OK"
+		if r.Error != "" {
+			status = r.Error
+		}
+		stack := ""
+		if len(r.SecurityStack) > 0 {
+			stack = strings.Join(r.SecurityStack, ",")
+		}
+		_ = w.Write([]string{r.Domain, r.PrimaryMX, r.Provider, stack, r.ASN, r.Organisation, status})
+	}
+	w.Flush()
+}
+
+func emitHTML(results []Result) {
+	fmt.Println("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>mail-lens</title><style>body{font-family:Arial,sans-serif;margin:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px 8px;font-size:12px;text-align:left}th{background:#f2f2f2}</style></head><body>")
+	fmt.Println("<h1>mail-lens report</h1><table><thead><tr><th>Domain</th><th>Primary MX</th><th>Provider</th><th>Security Stack</th><th>ASN</th><th>Organisation</th><th>Status</th></tr></thead><tbody>")
+	for _, r := range results {
+		status := "OK"
+		if r.Error != "" {
+			status = r.Error
+		}
+		stack := "-"
+		if len(r.SecurityStack) > 0 {
+			stack = strings.Join(r.SecurityStack, ",")
+		}
+		fmt.Printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",
+			htmlEscape(empty(r.Domain)),
+			htmlEscape(empty(r.PrimaryMX)),
+			htmlEscape(empty(r.Provider)),
+			htmlEscape(stack),
+			htmlEscape(empty(r.ASN)),
+			htmlEscape(empty(r.Organisation)),
+			htmlEscape(status),
+		)
+	}
+	fmt.Println("</tbody></table></body></html>")
+}
+
+func htmlEscape(v string) string {
+	replacer := strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;", "\"", "&quot;", "'", "&#39;")
+	return replacer.Replace(v)
 }
 
 func empty(s string) string {
