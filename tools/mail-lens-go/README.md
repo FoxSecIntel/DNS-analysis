@@ -14,14 +14,23 @@ High-performance domain email security provider detection.
 - ASN mapping for unknown/internal MX
 - Table output by default, `--json` for pipelines
 
-## Build (Linux)
+## Build
+
+Quick build (Linux + Windows):
+
+```bash
+cd tools/mail-lens-go
+./build.sh
+```
+
+Manual Linux build:
 
 ```bash
 cd tools/mail-lens-go
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o mail-lens .
 ```
 
-## Cross-compile (Windows)
+Manual Windows cross-compile:
 
 ```bash
 cd tools/mail-lens-go

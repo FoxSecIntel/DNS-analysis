@@ -1,4 +1,11 @@
 #!/bin/bash
+if [[ "${1:-}" == "-a" || "${1:-}" == "--author" ]]; then
+  echo "Author: FoxSecIntel"
+  echo "Repository: https://github.com/FoxSecIntel/DNS-analysis
+  echo "Tool: domain-emailsecurityproviders.sh"
+  exit 0
+fi
+
 set -euo pipefail
 
 VERSION="1.2.0"
