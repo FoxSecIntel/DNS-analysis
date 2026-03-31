@@ -50,6 +50,7 @@ func main() {
 	var outputFlag string
 	var jsonOut bool
 	var mandalorian bool
+	var author bool
 	var concurrency int
 
 	flag.StringVar(&domainFlag, "domain", "", "Single domain to analyse")
@@ -57,6 +58,7 @@ func main() {
 	flag.StringVar(&outputFlag, "output", "table", "Output format: table, json, csv, html")
 	flag.BoolVar(&jsonOut, "json", false, "Output as JSON")
 	flag.BoolVar(&mandalorian, "m", false, "")
+	flag.BoolVar(&author, "a", false, "Show author and repository details")
 	flag.IntVar(&concurrency, "concurrency", 10, "Worker pool concurrency")
 
 	cleanArgs, positionalDomain := preprocessArgs(os.Args[1:])
@@ -66,6 +68,12 @@ func main() {
 
 	if mandalorian {
 		fmt.Println("Victory is not winning for ourselves, but for others. - The Mandalorian")
+		return
+	}
+	if author {
+		fmt.Println("Author: FoxSecIntel")
+		fmt.Println("Repository: https://github.com/FoxSecIntel/DNS-analysis")
+		fmt.Println("Tool: domain-posture-go")
 		return
 	}
 

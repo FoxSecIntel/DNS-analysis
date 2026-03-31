@@ -72,8 +72,16 @@ func main() {
 		timeout = flag.Duration("timeout", 2*time.Second, "Per-lookup timeout")
 		jsonOut = flag.Bool("json", false, "Output as JSON")
 		mEgg    = flag.Bool("m", false, "") // intentionally undocumented
+		author  = flag.Bool("a", false, "Show author and repository details")
 	)
 	flag.Parse()
+
+	if *author {
+		fmt.Println("Author: FoxSecIntel")
+		fmt.Println("Repository: https://github.com/FoxSecIntel/DNS-analysis")
+		fmt.Println("Tool: mail-lens-go")
+		return
+	}
 
 	if *mEgg {
 		fmt.Println("Victory is not winning for ourselves, but for others. - The Mandalorian")
